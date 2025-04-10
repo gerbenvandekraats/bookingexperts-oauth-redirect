@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Booking Experts OAuth Koppeling</title>
+</head>
+<body style="font-family: sans-serif; padding: 2em; max-width: 600px; margin: auto;">
+  <h1>Booking Experts koppeling</h1>
+  <p>De koppeling is succesvol verlopen! Voer hieronder de URL van jouw Odoo-installatie in om terug te keren en de koppeling af te ronden.</p>
+
+  <label for="odoo_url">Odoo URL:</label><br>
+  <input type="text" id="odoo_url" placeholder="https://mijn.odoo.instance" style="width: 100%; padding: 0.5em; margin-top: 0.5em;" />
+  
+  <button onclick="redirectToOdoo()" style="margin-top: 1em; padding: 0.75em 1.5em;">Ga verder</button>
+
+  <p id="error" style="color: red;"></p>
+
+  <script>
+    function getCodeFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('code');
+    }
+
+    function redirectToOdoo() {
+      const odooUrl = document.getElementById("odoo_url").value.trim();
+      const code = getCodeFromURL();
+      const errorEl = document.getElementById("error");
+
+      if (!odooUrl || !code) {
+        errorEl.textContent = "Zorg dat je zowel de Odoo URL invult én dat de code aanwezig is in de URL.";
+        return;
+      }
+
+      // verwijder eventuele trailing slash
+      const cleanUrl = odooUrl.replace(/\/+$/, '');
+      const finalUrl = `${cleanUrl}/bookingexperts/oauth/callback?code=${encodeURIComponent(code)}`;
+      window.location.href = finalUrl;
+    }
+  </script>
+</body>
+</html>
