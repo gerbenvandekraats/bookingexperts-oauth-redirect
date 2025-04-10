@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Booking Experts OAuth Koppeling</title>
 </head>
 <body style="font-family: sans-serif; padding: 2em; max-width: 600px; margin: auto;">
   <h1>Booking Experts koppeling</h1>
-  <p>De koppeling is succesvol verlopen! Voer hieronder de URL van jouw Odoo-installatie in om terug te keren en de koppeling af te ronden.</p>
+  <p>Voer hieronder de URL van jouw Odoo-installatie in als je niet automatisch wordt doorgestuurd.</p>
 
   <label for="odoo_url">Odoo URL:</label><br>
   <input type="text" id="odoo_url" placeholder="https://mijn.odoo.instance" style="width: 100%; padding: 0.5em; margin-top: 0.5em;" />
@@ -17,22 +17,46 @@
   <p id="error" style="color: red;"></p>
 
   <script>
-    function getCodeFromURL() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('code');
+    // Kleine helpers voor cookies
+    function setCookie(name, value, days) {
+      const d = new Date();
+      d.setTime(d.getTime() + (days*24*60*60*1000));
+      document.cookie = `${name}=${value};path=/;expires=${d.toUTCString()}`;
     }
 
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    // Haal parameters uit URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const origin = urlParams.get('origin');
+    const code = urlParams.get('code');
+
+    // Als origin aanwezig → cookie opslaan
+    if (origin) {
+      setCookie('bex_origin', origin, 7);
+    }
+
+    // Als code aanwezig en cookie is er → automatisch redirecten
+    const savedOrigin = getCookie('bex_origin');
+    if (code && savedOrigin) {
+      const redirectUrl = `${savedOrigin.replace(/\/+$/, '')}/bookingexperts/oauth/callback?code=${encodeURIComponent(code)}`;
+      window.location.href = redirectUrl;
+    }
+
+    // Handmatige redirect (fallback via formulier)
     function redirectToOdoo() {
       const odooUrl = document.getElementById("odoo_url").value.trim();
-      const code = getCodeFromURL();
       const errorEl = document.getElementById("error");
 
       if (!odooUrl || !code) {
-        errorEl.textContent = "Zorg dat je zowel de Odoo URL invult én dat de code aanwezig is in de URL.";
+        errorEl.textContent = "Zorg dat je zowel de Odoo URL invult én dat er een code is.";
         return;
       }
 
-      // verwijder eventuele trailing slash
       const cleanUrl = odooUrl.replace(/\/+$/, '');
       const finalUrl = `${cleanUrl}/bookingexperts/oauth/callback?code=${encodeURIComponent(code)}`;
       window.location.href = finalUrl;
