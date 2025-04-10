@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Booking Experts OAuth Koppeling</title>
 </head>
 <body style="font-family: sans-serif; padding: 2em; max-width: 600px; margin: auto;">
@@ -10,17 +10,18 @@
   <p>Voer hieronder de URL van jouw Odoo-installatie in als je niet automatisch wordt doorgestuurd.</p>
 
   <label for="odoo_url">Odoo URL:</label><br>
-  <input type="text" id="odoo_url" placeholder="https://odoo.example.com" style="width: 100%; padding: 0.5em; margin-top: 0.5em;" />
+  <input type="text" id="odoo_url" placeholder="https://mijn.odoo.instance" style="width: 100%; padding: 0.5em; margin-top: 0.5em;" />
   
   <button onclick="redirectToOdoo()" style="margin-top: 1em; padding: 0.75em 1.5em;">Ga verder</button>
 
   <p id="error" style="color: red;"></p>
 
   <script>
-    // Kleine helpers voor cookies
+    const BE_APP_URL = "https://app.bookingexperts.com/app_store/organizations/1778/applications/570";
+
     function setCookie(name, value, days) {
       const d = new Date();
-      d.setTime(d.getTime() + (days*24*60*60*1000));
+      d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
       document.cookie = `${name}=${value};path=/;expires=${d.toUTCString()}`;
     }
 
@@ -30,30 +31,30 @@
       if (parts.length === 2) return parts.pop().split(';').shift();
     }
 
-    // Haal parameters uit URL
     const urlParams = new URLSearchParams(window.location.search);
     const origin = urlParams.get('origin');
     const code = urlParams.get('code');
 
-    // Als origin aanwezig → cookie opslaan
+    // Stap 1: Als origin in de URL staat → opslaan + redirect naar BE app
     if (origin) {
       setCookie('bex_origin', origin, 7);
+      window.location.href = BE_APP_URL;
     }
 
-    // Als code aanwezig en cookie is er → automatisch redirecten
+    // Stap 2: Als code aanwezig is en origin-cookie bestaat → redirect naar Odoo
     const savedOrigin = getCookie('bex_origin');
     if (code && savedOrigin) {
       const redirectUrl = `${savedOrigin.replace(/\/+$/, '')}/bookingexperts/oauth/callback?code=${encodeURIComponent(code)}`;
       window.location.href = redirectUrl;
     }
 
-    // Handmatige redirect (fallback via formulier)
+    // Stap 3: fallback formulier
     function redirectToOdoo() {
       const odooUrl = document.getElementById("odoo_url").value.trim();
       const errorEl = document.getElementById("error");
 
       if (!odooUrl || !code) {
-        errorEl.textContent = "Zorg dat je zowel de Odoo URL invult én dat er een code is.";
+        errorEl.textContent = "Zorg dat je zowel de Odoo URL invult én dat er een code is in de URL.";
         return;
       }
 
