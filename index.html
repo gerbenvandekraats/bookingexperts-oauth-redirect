@@ -100,7 +100,7 @@
     // 🔁 Terugweg
     const savedOrigin = getCookie('bex_origin');
     if (code && savedOrigin) {
-      const redirectUrl = `${savedOrigin.replace(/\/+$/, '')}/bookingexperts/oauth/callback?code=${encodeURIComponent(code)}`;
+      const redirectUrl = `${savedOrigin.replace(/\/+$/, '')}/bex/oauth/callback?code=${encodeURIComponent(code)}`;
       window.location.href = redirectUrl;
     }
 
