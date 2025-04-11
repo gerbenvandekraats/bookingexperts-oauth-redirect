@@ -4,20 +4,80 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Booking Experts OAuth Koppeling</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    .container {
+      max-width: 600px;
+      background: #fff;
+      margin: 5vh auto;
+      padding: 2em;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border-radius: 8px;
+    }
+
+    h1 {
+      color: #0A954F;
+      font-size: 1.75rem;
+      margin-bottom: 1em;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 0.25em;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.75em;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+      margin-bottom: 1em;
+    }
+
+    button {
+      background-color: #0A954F;
+      color: #fff;
+      border: none;
+      padding: 0.75em 1.5em;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #087a41;
+    }
+
+    #error {
+      color: red;
+      margin-top: 1em;
+    }
+  </style>
 </head>
-<body style="font-family: sans-serif; padding: 2em; max-width: 600px; margin: auto;">
-  <h1>Booking Experts koppeling</h1>
-  <p>Voer hieronder de URL van jouw Odoo-installatie in als je niet automatisch wordt doorgestuurd.</p>
+<body>
+  <div class="container">
+    <h1>Booking Experts koppeling</h1>
+    <p>Voer hieronder de URL van jouw Odoo-installatie in als je niet automatisch wordt doorgestuurd.</p>
 
-  <label for="odoo_url">Odoo URL:</label><br>
-  <input type="text" id="odoo_url" placeholder="https://mijn.odoo.instance" style="width: 100%; padding: 0.5em; margin-top: 0.5em;" />
-  
-  <button onclick="redirectToOdoo()" style="margin-top: 1em; padding: 0.75em 1.5em;">Ga verder</button>
+    <label for="odoo_url">Odoo URL:</label>
+    <input type="text" id="odoo_url" placeholder="https://mijn.odoo.instance" />
 
-  <p id="error" style="color: red;"></p>
+    <button onclick="redirectToOdoo()">Ga verder</button>
+    <p id="error"></p>
+  </div>
 
   <script>
-    const BE_APP_URL = "https://app.bookingexperts.com/app_store/organizations/1778/applications/570";
+    const BE_APP_BASE_URL = "https://app.bookingexperts.com/app_store/organizations/1778/applications/570";
 
     function setCookie(name, value, days) {
       const d = new Date();
@@ -33,12 +93,14 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const origin = urlParams.get('origin');
+    const store = urlParams.get('store');
     const code = urlParams.get('code');
 
-    // Stap 1: Als origin in de URL staat → opslaan + redirect naar BE app
+    // Stap 1: Als origin in de URL staat → opslaan + redirect naar BE app met store
     if (origin) {
       setCookie('bex_origin', origin, 7);
-      window.location.href = BE_APP_URL;
+      const redirectToBE = `${BE_APP_BASE_URL}?store=${encodeURIComponent(store || '')}`;
+      window.location.href = redirectToBE;
     }
 
     // Stap 2: Als code aanwezig is en origin-cookie bestaat → redirect naar Odoo
