@@ -65,20 +65,21 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container" id="form-container" style="display: none;">
     <h1>Booking Experts koppeling</h1>
-    <p>Voer hieronder de URL van jouw Odoo-installatie in als je niet automatisch wordt doorgestuurd.</p>
+    <p>Voer hieronder de gegevens in om door te gaan met de koppeling.</p>
+
+    <label for="store_url">App store URL:</label>
+    <input type="text" id="store_url" placeholder="https://app.bookingexperts.com/..." />
 
     <label for="odoo_url">Odoo URL:</label>
     <input type="text" id="odoo_url" placeholder="https://mijn.odoo.instance" />
 
-    <button onclick="redirectToOdoo()">Ga verder</button>
+    <button onclick="handleSubmit()">Ga verder</button>
     <p id="error"></p>
   </div>
 
   <script>
-    const BE_APP_BASE_URL = "https://app.bookingexperts.com/app_store/organizations/1778/applications/570";
-
     function setCookie(name, value, days) {
       const d = new Date();
       d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
@@ -96,33 +97,42 @@
     const store = urlParams.get('store');
     const code = urlParams.get('code');
 
-    // Stap 1: Als origin in de URL staat → opslaan + redirect naar BE app met store
-    if (origin) {
-      setCookie('bex_origin', origin, 7);
-      const redirectToBE = `${BE_APP_BASE_URL}?store=${encodeURIComponent(store || '')}`;
-      window.location.href = redirectToBE;
-    }
-
-    // Stap 2: Als code aanwezig is en origin-cookie bestaat → redirect naar Odoo
+    // 🔁 Terugweg
     const savedOrigin = getCookie('bex_origin');
     if (code && savedOrigin) {
       const redirectUrl = `${savedOrigin.replace(/\/+$/, '')}/bookingexperts/oauth/callback?code=${encodeURIComponent(code)}`;
       window.location.href = redirectUrl;
     }
 
-    // Stap 3: fallback formulier
-    function redirectToOdoo() {
+    // ➡️ Heenweg
+    function handleSubmit() {
       const odooUrl = document.getElementById("odoo_url").value.trim();
+      const storeUrl = document.getElementById("store_url").value.trim();
       const errorEl = document.getElementById("error");
 
-      if (!odooUrl || !code) {
-        errorEl.textContent = "Zorg dat je zowel de Odoo URL invult én dat er een code is in de URL.";
+      if (!odooUrl || !storeUrl) {
+        errorEl.textContent = "Beide velden zijn verplicht.";
         return;
       }
 
-      const cleanUrl = odooUrl.replace(/\/+$/, '');
-      const finalUrl = `${cleanUrl}/bookingexperts/oauth/callback?code=${encodeURIComponent(code)}`;
-      window.location.href = finalUrl;
+      setCookie('bex_origin', odooUrl, 7);
+      window.location.href = storeUrl;
+    }
+
+    function showFormWithValues(originVal, storeVal) {
+      document.getElementById('form-container').style.display = 'block';
+      if (originVal) document.getElementById("odoo_url").value = originVal;
+      if (storeVal) document.getElementById("store_url").value = storeVal;
+    }
+
+    // 🌐 Routering logica
+    if (origin && store) {
+      // beide aanwezig: direct redirect
+      setCookie('bex_origin', origin, 7);
+      window.location.href = store;
+    } else {
+      // formulier tonen (al dan niet met voorinvulling)
+      showFormWithValues(origin, store);
     }
   </script>
 </body>
